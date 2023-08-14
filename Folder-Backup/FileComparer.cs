@@ -72,8 +72,7 @@ namespace Folder_Backup
             return true;
         }
 
-        [LibraryImport("msvcrt.dll", EntryPoint = "memcmpA")]
-        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-        private static partial int memcmp(byte[] b1, byte[] b2, long count);
+        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
+        static extern int memcmp(byte[] b1, byte[] b2, long count);
     }
 }
