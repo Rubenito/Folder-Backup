@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Folder_Backup
 {
+    /// <summary>
+    /// Checks the source folder every interval time and writes the contents to the target folder
+    /// </summary>
     public class FileBackupWriter : BackgroundService
     {
         private readonly string _source;
@@ -20,15 +23,14 @@ namespace Folder_Backup
         {
             _source = source;
             _target = target;
-            _interval = interval;  
+            _interval = interval;
             _logFileLocation = logFileLocation;
             _logger = logger;
         }
 
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(_interval));
+            PeriodicTimer timer = new(TimeSpan.FromSeconds(_interval));
 
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
@@ -48,10 +50,10 @@ namespace Folder_Backup
             DeleteFilesAtTarget(FilesAtSource, FilesAtTarget);
         }
 
-        private void GetFilesAndFoldersAtLocation(string location, out HashSet<string> FoldersAtSource, out HashSet<string> FilesAtSource)
+        private void GetFilesAndFoldersAtLocation(string location, out HashSet<string> FoldersAtLocation, out HashSet<string> FilesAtLocation)
         {
-            FoldersAtSource = new();
-            FilesAtSource = new();
+            FoldersAtLocation = new();
+            FilesAtLocation = new();
 
             Queue<string> foldersToCheck = new();
             foldersToCheck.Enqueue(location);
@@ -62,13 +64,13 @@ namespace Folder_Backup
 
                 foreach (string folder in GetDirectoryNamesAtLocation(currentFolder))
                 {
-                    FoldersAtSource.Add(Path.GetRelativePath(location, folder));
+                    FoldersAtLocation.Add(Path.GetRelativePath(location, folder));
                     foldersToCheck.Enqueue(folder);
                 }
 
                 foreach (string file in GetFileNamesAtLocation(currentFolder))
                 {
-                    FilesAtSource.Add(Path.GetRelativePath(location, file));
+                    FilesAtLocation.Add(Path.GetRelativePath(location, file));
                 }
             }
         }
@@ -88,7 +90,7 @@ namespace Folder_Backup
                 {
                     Log($"Could not create: {targetPath}\nError: {e.Message}", LogLevel.Error);
                 }
-                
+
             }
         }
 
@@ -107,7 +109,7 @@ namespace Folder_Backup
                 {
                     Log($"Could not delete: {targetPath}\nError: {e.Message}", LogLevel.Error);
                 }
-                
+
             }
         }
 
@@ -128,16 +130,16 @@ namespace Folder_Backup
                 {
                     Log($"Could not write: {targetPath}\nError: {e.Message}", LogLevel.Error);
                 }
-                
+
             }
 
             // Case: file does already exist at target 
             foreach (string file in filesAtSource.Intersect(filesAtTarget))
-            {                
+            {
                 string sourcePath = GetAbsolutePath(_source, file);
                 string targetPath = GetAbsolutePath(_target, file);
 
-                FileComparer fileComparer = new FileComparer(sourcePath, targetPath);
+                FileComparer fileComparer = new(sourcePath, targetPath);
                 if (!fileComparer.AreFilesEqual())
                 {
                     try
@@ -150,7 +152,7 @@ namespace Folder_Backup
                         Log($"Could not write: {targetPath}\nError: {e.Message}", LogLevel.Error);
                     }
                 }
-                
+
             }
         }
 
@@ -169,7 +171,7 @@ namespace Folder_Backup
                 {
                     Log($"Could not delete: {targetPath}\nError: {e.Message}", LogLevel.Error);
                 }
-                
+
             }
         }
 
@@ -177,8 +179,8 @@ namespace Folder_Backup
         {
             string logFilePath = Path.Combine(_logFileLocation, GetLogFileName());
             FileInfo logFile = new(logFilePath);
-            if (!logFile.Exists) 
-            { 
+            if (!logFile.Exists)
+            {
                 FileStream logStream = logFile.Create();
                 logStream.Close();
             }
@@ -187,27 +189,27 @@ namespace Folder_Backup
             {
                 writer.WriteLine($"[{logLevel}] {DateTime.Now}: {message}");
                 writer.Close();
-            } 
-                
+            }
+
             _logger.Log(logLevel, message);
         }
 
-        private string GetAbsolutePath(string location, string relativePath)
+        private static string GetAbsolutePath(string location, string relativePath)
         {
             return Path.Combine(location, relativePath);
         }
 
-        private IEnumerable<string> GetFileNamesAtLocation(string location) 
+        private static IEnumerable<string> GetFileNamesAtLocation(string location)
         {
             return Directory.EnumerateFiles(location);
         }
 
-        private IEnumerable<string> GetDirectoryNamesAtLocation(string location)
+        private static IEnumerable<string> GetDirectoryNamesAtLocation(string location)
         {
             return Directory.EnumerateDirectories(location);
         }
 
-        private string GetLogFileName()
+        private static string GetLogFileName()
         {
             return $"folder_backup_log_{DateTime.Today.Year}_{DateTime.Today.Month}_{DateTime.Today.Day}.txt";
         }

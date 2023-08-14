@@ -1,14 +1,12 @@
 ﻿using CommandLine;
 using Folder_Backup;
-using NUnit.Framework;
-using System.Diagnostics;
-using System.Security.AccessControl;
+using System.Reflection;
 
 namespace Folder_Backup_Test
 {
     public class CommandLineOptionsTests
     {
-        private static readonly string FOLDER_LOCATION = "C:\\Users\\Ruben\\Documents\\UnitTestFolders";
+        private static readonly string? _folderLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
         private string _sourcePath;
         private string _targetPath;
@@ -16,14 +14,18 @@ namespace Folder_Backup_Test
 
         private DirectoryInfo _sourceDirectory;
         private DirectoryInfo _targetDirectory;
-        private DirectoryInfo _logsDirectory;
 
         [OneTimeSetUp]
         public void Init()
         {
-            _sourcePath = Path.Combine(FOLDER_LOCATION, "Source");
-            _targetPath = Path.Combine(FOLDER_LOCATION, "Target");
-            _logsPath = Path.Combine(FOLDER_LOCATION, "Logs");
+            if (_folderLocation == null)
+            {
+                throw new FileNotFoundException("Folder location is null");
+            }
+
+            _sourcePath = Path.Combine(_folderLocation, "Source");
+            _targetPath = Path.Combine(_folderLocation, "Target");
+            _logsPath = Path.Combine(_folderLocation, "Logs");
         }
 
         [SetUp]
@@ -31,7 +33,6 @@ namespace Folder_Backup_Test
         {
             _sourceDirectory = Directory.CreateDirectory(_sourcePath);
             _targetDirectory = Directory.CreateDirectory(_targetPath);
-            _logsDirectory = Directory.CreateDirectory(_logsPath);
         }
 
         [TearDown]
@@ -50,49 +51,28 @@ namespace Folder_Backup_Test
             Parser.Default.Dispose();
         }
 
+        [OneTimeTearDown]
+        public void Cleanup()
+        {
+            Directory.Delete(_folderLocation, true);
+        }
+
         [Test]
         public void ParseArguments_FolderDoesNotExist_ThrowsError()
         {
-            string[] args = { _sourcePath, _targetPath, "10", _logsPath };
+            string[] args = { "-s", "Wrong_Path", "-t", _targetPath, "-i", "10", "-l", _logsPath };
 
             bool hasErrorMessage = Parser.Default.ParseArguments<CommandLineOptions>(args).Errors.Any();
             Assert.That(hasErrorMessage, Is.True);
         }
 
         [Test]
-        public void ParseArguments_FoldersHaveRightPermissions_NoErrors()
+        public void ParseArguments_FolderDoesExist_NoErrors()
         {
-            string[] args = { "-s", _sourcePath, "-t", _targetPath };
-            Directory.CreateDirectory(_sourcePath);
-            Directory.CreateDirectory(_targetPath);
+            string[] args = { "-s", _logsPath, "-t", _targetPath, "-i", "10", "-l", _logsPath };
 
             bool hasErrorMessage = Parser.Default.ParseArguments<CommandLineOptions>(args).Errors.Any();
-
             Assert.That(hasErrorMessage, Is.False);
-        }
-
-        [Test]
-        public void ParseArguments_SourceFolderHasWrongPermissionsRead_ThrowsError()
-        {
-            string[] args = { "-s", _sourcePath, "-t", _targetPath };
-
-            SetDirectoryAccessRights(ref _sourceDirectory, FileSystemRights.ReadData, false);
-
-            bool hasErrorMessage = Parser.Default.ParseArguments<CommandLineOptions>(args).Errors.Any();
-
-            Assert.That(hasErrorMessage, Is.True);
-        }
-
-        [Test]
-        public void ParseArguments_TargetFolderHasWrongPermissionsWrite_ThrowsError()
-        {
-            string[] args = { "-s", _sourcePath, "-t", _targetPath };
-
-            SetDirectoryAccessRights(ref _targetDirectory, FileSystemRights.WriteData, false);
-
-            bool hasErrorMessage = Parser.Default.ParseArguments<CommandLineOptions>(args).Errors.Any();
-
-            Assert.That(hasErrorMessage, Is.True);
         }
 
         [Test]
@@ -115,19 +95,8 @@ namespace Folder_Backup_Test
             Assert.That(hasErrorMessage, Is.True);
         }
 
-        private void SetDirectoryAccessRights(ref DirectoryInfo directory, FileSystemRights fileSystemRights, bool allow)
+        private static void CleanDirectory(DirectoryInfo directory)
         {
-            DirectorySecurity securityRulesNoRead = new DirectorySecurity();
-            securityRulesNoRead.AddAccessRule(new FileSystemAccessRule("Users", 
-                FileSystemRights.ReadData, 
-                allow? AccessControlType.Allow : AccessControlType.Deny));
-            directory.SetAccessControl(securityRulesNoRead);
-        }
-
-        private void CleanDirectory(DirectoryInfo directory)
-        {
-            SetDirectoryAccessRights(ref directory, FileSystemRights.ReadData, true);
-            SetDirectoryAccessRights(ref directory, FileSystemRights.WriteData, true);
             Directory.Delete(directory.FullName, true);
         }
     }

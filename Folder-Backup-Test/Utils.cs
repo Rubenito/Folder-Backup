@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Folder_Backup_Test
+﻿namespace Folder_Backup_Test
 {
     public static class Utils
     {
@@ -17,7 +11,7 @@ namespace Folder_Backup_Test
 
             foreach (FileInfo file in directoryInfo.GetFiles())
             {
-                while(IsFileLocked(file)) 
+                while (IsFileLocked(file))
                 {
                     Thread.Sleep(1000);
                 }

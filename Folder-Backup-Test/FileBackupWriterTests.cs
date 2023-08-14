@@ -2,13 +2,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using System.Reflection;
 
 namespace Folder_Backup_Test
 {
     internal class FileBackupWriterTests
     {
-        private static readonly string FOLDER_LOCATION = "C:\\Users\\Ruben\\Documents\\UnitTestFolders";
+        private static readonly string? _folderLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
         private DirectoryInfo _sourceDirectory;
         private DirectoryInfo _targetDirectory;
@@ -24,9 +24,14 @@ namespace Folder_Backup_Test
         [OneTimeSetUp]
         public void Init()
         {
-            string _sourceDirectoryPath = Path.Combine(FOLDER_LOCATION, "Source");
-            string _targetDirectoryPath = Path.Combine(FOLDER_LOCATION, "Target");
-            string _logDirectoryPath = Path.Combine(FOLDER_LOCATION, "Logs");
+            if (_folderLocation == null)
+            {
+                throw new FileNotFoundException("Folder location is null");
+            }
+
+            string _sourceDirectoryPath = Path.Combine(_folderLocation, "Source");
+            string _targetDirectoryPath = Path.Combine(_folderLocation, "Target");
+            string _logDirectoryPath = Path.Combine(_folderLocation, "Logs");
 
             _sourceDirectory = Directory.CreateDirectory(_sourceDirectoryPath);
             _targetDirectory = Directory.CreateDirectory(_targetDirectoryPath);
@@ -214,7 +219,7 @@ namespace Folder_Backup_Test
             Assert.Multiple(() =>
             {
                 Assert.That(_targetDirectory.EnumerateFiles().Count(), Is.EqualTo(100));
-                Assert.That(text.Length, Is.EqualTo(100));
+                Assert.That(text, Has.Length.EqualTo(100));
             });
         }
 
@@ -224,7 +229,7 @@ namespace Folder_Backup_Test
             Task task = _host.StartAsync(_cancellationTokenSource.Token);
 
             Task.Delay(2000).Wait();
-            
+
             using (FileStream fileStreamSource = new(_sourceFile.FullName, FileMode.Create))
             {
                 fileStreamSource.SetLength((long)512 * 1024 * 1024);

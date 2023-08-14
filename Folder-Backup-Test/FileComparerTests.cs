@@ -1,10 +1,11 @@
 using Folder_Backup;
+using System.Reflection;
 
 namespace Folder_Backup_Test
 {
     public class FileComparerTests
     {
-        private static readonly string FOLDER_LOCATION = "C:\\Users\\Ruben\\Documents\\UnitTestFolders";
+        private static readonly string? _folderLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
         private string _sourceFolder;
         private string _targetFolder;
@@ -15,8 +16,13 @@ namespace Folder_Backup_Test
         [OneTimeSetUp]
         public void Init()
         {
-            _sourceFolder = Path.Combine(FOLDER_LOCATION, "Source");
-            _targetFolder = Path.Combine(FOLDER_LOCATION, "Target");
+            if (_folderLocation == null)
+            {
+                throw new FileNotFoundException("Folder location is null");
+            }
+
+            _sourceFolder = Path.Combine(_folderLocation, "Source");
+            _targetFolder = Path.Combine(_folderLocation, "Target");
 
             Directory.CreateDirectory(_sourceFolder);
             Directory.CreateDirectory(_targetFolder);
@@ -26,19 +32,19 @@ namespace Folder_Backup_Test
         }
 
         [TearDown]
-        public void Teardown() 
+        public void Teardown()
         {
             Utils.ClearFolder(_sourceFolder);
             Utils.ClearFolder(_targetFolder);
+
         }
 
         [OneTimeTearDown]
         public void Cleanup()
-        { 
-            Directory.Delete(_sourceFolder, true);
-            Directory.Delete(_targetFolder, true);
+        {
+            Directory.Delete(_folderLocation, true);
         }
-        
+
         [Test]
         public void AreFilesEqual_DifferentSize_False()
         {

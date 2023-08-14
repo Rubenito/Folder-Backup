@@ -1,15 +1,14 @@
-﻿using System.Diagnostics;
-using System.IO.MemoryMappedFiles;
+﻿using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 
 namespace Folder_Backup
 {
-    public class FileComparer 
+    public partial class FileComparer
     {
-        private FileInfo _sourceFileInfo;
-        private FileInfo _targetFileInfo;
+        private readonly FileInfo _sourceFileInfo;
+        private readonly FileInfo _targetFileInfo;
 
-        private static int CHUNK_SIZE = 4096;
+        private static readonly int CHUNK_SIZE = 4096;
 
         public FileComparer(string sourceFilePath, string targetFilePath)
         {
@@ -73,7 +72,8 @@ namespace Folder_Backup
             return true;
         }
 
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        static extern int memcmp(byte[] b1, byte[] b2, long count);
+        [LibraryImport("msvcrt.dll", EntryPoint = "memcmpA")]
+        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+        private static partial int memcmp(byte[] b1, byte[] b2, long count);
     }
 }

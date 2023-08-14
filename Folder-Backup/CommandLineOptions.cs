@@ -1,9 +1,12 @@
 ﻿using CommandLine;
 using System.Reflection;
-using System.Security.AccessControl;
 
 namespace Folder_Backup
 {
+    /// <summary>
+    /// The command line oprions expected by the program:
+    /// -s "Source" -t "Target" [-i "Interval"] [-l "LogFile"]
+    /// </summary>
     public class CommandLineOptions
     {
         private string _source;
@@ -19,11 +22,6 @@ namespace Folder_Backup
                 if (!Directory.Exists(value))
                 {
                     throw new DirectoryNotFoundException($"Source directory '{value}' does not exist");
-                }
-
-                if (!DirectoryHasAccessRights(value, FileSystemRights.ReadData))
-                {
-                    throw new UnauthorizedAccessException($"Missing read access for directory '{value}'");
                 }
 
                 _source = value;
@@ -43,16 +41,6 @@ namespace Folder_Backup
                 if (!Directory.Exists(value))
                 {
                     throw new DirectoryNotFoundException($"Target directory '{value}' does not exist");
-                }
-
-                if (!DirectoryHasAccessRights(value, FileSystemRights.ReadData))
-                {
-                    throw new UnauthorizedAccessException($"Missing read access for directory '{value}'");
-                }
-
-                if (!DirectoryHasAccessRights(value, FileSystemRights.WriteData))
-                {
-                    throw new UnauthorizedAccessException($"Missing write access for directory '{value}'");
                 }
 
                 _target = value;
@@ -78,7 +66,7 @@ namespace Folder_Backup
 
         }
 
-        private string _logFileLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location); // Default log location to loaction of executable
+        private string? _logFileLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location); // Default log location to loaction of executable
         [Option('l', "logFileLocation", Required = false, HelpText = "The location of the logfile.")]
         public string LogFileLocation
         {
@@ -93,33 +81,13 @@ namespace Folder_Backup
                     throw new DirectoryNotFoundException($"Log file location directory '{value}' does not exist");
                 }
 
-                if (!DirectoryHasAccessRights(value, FileSystemRights.WriteData))
+                if (_logFileLocation == null)
                 {
-                    throw new UnauthorizedAccessException($"Missing write access for directory '{value}'");
+                    throw new DirectoryNotFoundException($"Could not find executable path to set default log file location");
                 }
 
                 _logFileLocation = value;
             }
-        }
-
-        private bool DirectoryHasAccessRights(string path, FileSystemRights fileSystemRights)
-        {
-            // Check if read rights for directory are present
-            DirectoryInfo directoryInfo = new DirectoryInfo(path);
-            var rules = directoryInfo.GetAccessControl().GetAccessRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
-            foreach (FileSystemAccessRule rule in rules)
-            {
-                if ((fileSystemRights & rule.FileSystemRights) != fileSystemRights)
-                {
-                    continue;
-                }
-
-                if (rule.AccessControlType == AccessControlType.Deny)
-                {
-                    return false;
-                }
-            }
-            return true;
         }
     }
 }
