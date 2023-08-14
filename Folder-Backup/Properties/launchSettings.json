@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Folder-Backup": {
+      "commandName": "Project",
+      "commandLineArgs": "-s \"C:\\Users\\Ruben\\Documents\\Source\" -t \"C:\\Users\\Ruben\\Documents\\Target\" -i 1.5 -l \"C:\\Users\\Ruben\\Documents\\Logs\""
+    }
+  }
+}
