@@ -69,7 +69,7 @@ namespace Folder_Backup_Test
         [Test]
         public void ParseArguments_FolderDoesExist_NoErrors()
         {
-            string[] args = { "-s", _logsPath, "-t", _targetPath, "-i", "10", "-l", _logsPath };
+            string[] args = { "-s", _sourcePath, "-t", _targetPath, };
 
             bool hasErrorMessage = Parser.Default.ParseArguments<CommandLineOptions>(args).Errors.Any();
             Assert.That(hasErrorMessage, Is.False);

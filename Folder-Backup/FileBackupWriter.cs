@@ -179,6 +179,7 @@ namespace Folder_Backup
         {
             string logFilePath = Path.Combine(_logFileLocation, GetLogFileName());
             FileInfo logFile = new(logFilePath);
+
             if (!logFile.Exists)
             {
                 FileStream logStream = logFile.Create();
