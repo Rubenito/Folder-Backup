@@ -48,7 +48,7 @@ namespace Folder_Backup
         }
 
         private float _interval = 60; // default value: Once a minute
-        [Option('i', "interval", Required = false, HelpText = "The time between beackups.")]
+        [Option('i', "interval", Required = false, HelpText = "The time between beackups in seconds.")]
         public float Interval
         {
             get
