@@ -31,15 +31,19 @@ namespace Folder_Backup_Test
 
             string _sourceDirectoryPath = Path.Combine(_folderLocation, "Source");
             string _targetDirectoryPath = Path.Combine(_folderLocation, "Target");
-            string _logDirectoryPath = Path.Combine(_folderLocation, "Logs");
+            string _logsDirectoryPath = Path.Combine(_folderLocation, "Logs");
+
+            Utils.DeleteFolderIfExists(_sourceDirectoryPath);
+            Utils.DeleteFolderIfExists(_targetDirectoryPath);
+            Utils.DeleteFolderIfExists(_logsDirectoryPath);
 
             _sourceDirectory = Directory.CreateDirectory(_sourceDirectoryPath);
             _targetDirectory = Directory.CreateDirectory(_targetDirectoryPath);
-            _logsDirectory = Directory.CreateDirectory(_logDirectoryPath);
+            _logsDirectory = Directory.CreateDirectory(_logsDirectoryPath);
 
             string _sourceFilePath = Path.Combine(_sourceDirectoryPath, "File.txt");
             string _targetFilePath = Path.Combine(_targetDirectoryPath, "File.txt");
-            string _logFilePath = Path.Combine(_logDirectoryPath, Utils.GetLogFileName());
+            string _logFilePath = Path.Combine(_logsDirectoryPath, Utils.GetLogFileName());
 
             _sourceFile = new FileInfo(_sourceFilePath);
             _targetFile = new FileInfo(_targetFilePath);

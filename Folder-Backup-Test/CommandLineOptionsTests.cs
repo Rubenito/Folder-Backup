@@ -8,9 +8,9 @@ namespace Folder_Backup_Test
     {
         private static readonly string? _folderLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
-        private string _sourcePath;
-        private string _targetPath;
-        private string _logsPath;
+        private string _sourceDirectoryPath;
+        private string _targetDirectoryPath;
+        private string _logsDirectoryPath;
 
         private DirectoryInfo _sourceDirectory;
         private DirectoryInfo _targetDirectory;
@@ -23,27 +23,32 @@ namespace Folder_Backup_Test
                 throw new FileNotFoundException("Folder location is null");
             }
 
-            _sourcePath = Path.Combine(_folderLocation, "Source");
-            _targetPath = Path.Combine(_folderLocation, "Target");
-            _logsPath = Path.Combine(_folderLocation, "Logs");
+            _sourceDirectoryPath = Path.Combine(_folderLocation, "Source");
+            _targetDirectoryPath = Path.Combine(_folderLocation, "Target");
+            _logsDirectoryPath = Path.Combine(_folderLocation, "Logs");
+
+            Utils.DeleteFolderIfExists(_sourceDirectoryPath);
+            Utils.DeleteFolderIfExists(_targetDirectoryPath);
+            Utils.DeleteFolderIfExists(_logsDirectoryPath);
         }
 
         [SetUp]
         public void SetUp()
         {
-            _sourceDirectory = Directory.CreateDirectory(_sourcePath);
-            _targetDirectory = Directory.CreateDirectory(_targetPath);
+            _sourceDirectory = Directory.CreateDirectory(_sourceDirectoryPath);
+            _targetDirectory = Directory.CreateDirectory(_targetDirectoryPath);
+            _targetDirectory = Directory.CreateDirectory(_logsDirectoryPath);
         }
 
         [TearDown]
         public void Teardown()
         {
-            if (Directory.Exists(_sourcePath))
+            if (Directory.Exists(_sourceDirectoryPath))
             {
                 CleanDirectory(_sourceDirectory);
             }
 
-            if (Directory.Exists(_targetPath))
+            if (Directory.Exists(_targetDirectoryPath))
             {
                 CleanDirectory(_targetDirectory);
             }
@@ -60,7 +65,7 @@ namespace Folder_Backup_Test
         [Test]
         public void ParseArguments_FolderDoesNotExist_ThrowsError()
         {
-            string[] args = { "-s", "Wrong_Path", "-t", _targetPath, "-i", "10", "-l", _logsPath };
+            string[] args = { "-s", "Wrong_Path", "-t", _targetDirectoryPath, "-i", "10", "-l", _logsDirectoryPath };
 
             bool hasErrorMessage = Parser.Default.ParseArguments<CommandLineOptions>(args).Errors.Any();
             Assert.That(hasErrorMessage, Is.True);
@@ -69,7 +74,7 @@ namespace Folder_Backup_Test
         [Test]
         public void ParseArguments_FolderDoesExist_NoErrors()
         {
-            string[] args = { "-s", _sourcePath, "-t", _targetPath, };
+            string[] args = { "-s", _sourceDirectoryPath, "-t", _targetDirectoryPath, };
 
             bool hasErrorMessage = Parser.Default.ParseArguments<CommandLineOptions>(args).Errors.Any();
             Assert.That(hasErrorMessage, Is.False);
@@ -78,7 +83,7 @@ namespace Folder_Backup_Test
         [Test]
         public void ParseArguments_IntervalGreaterZero_NoErrors()
         {
-            string[] args = { "-s", _sourcePath, "-t", _targetPath, "-i", "10" };
+            string[] args = { "-s", _sourceDirectoryPath, "-t", _targetDirectoryPath, "-i", "10" };
 
             bool hasErrorMessage = Parser.Default.ParseArguments<CommandLineOptions>(args).Errors.Any();
 
@@ -88,7 +93,7 @@ namespace Folder_Backup_Test
         [Test]
         public void ParseArguments_IntervalToSmall_ThrowsError()
         {
-            string[] args = { "-s", _sourcePath, "-t", _targetPath, "-i", "-10" };
+            string[] args = { "-s", _sourceDirectoryPath, "-t", _targetDirectoryPath, "-i", "-10" };
 
             bool hasErrorMessage = Parser.Default.ParseArguments<CommandLineOptions>(args).Errors.Any();
 

@@ -7,8 +7,8 @@ namespace Folder_Backup_Test
     {
         private static readonly string? _folderLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
-        private string _sourceFolder;
-        private string _targetFolder;
+        private string _sourceDirectoryPath;
+        private string _targetDirectoryPath;
 
         private string _sourceFilePath;
         private string _targetFilePath;
@@ -21,22 +21,24 @@ namespace Folder_Backup_Test
                 throw new FileNotFoundException("Folder location is null");
             }
 
-            _sourceFolder = Path.Combine(_folderLocation, "Source");
-            _targetFolder = Path.Combine(_folderLocation, "Target");
+            _sourceDirectoryPath = Path.Combine(_folderLocation, "Source");
+            _targetDirectoryPath = Path.Combine(_folderLocation, "Target");
 
-            Directory.CreateDirectory(_sourceFolder);
-            Directory.CreateDirectory(_targetFolder);
+            Utils.DeleteFolderIfExists(_sourceDirectoryPath);
+            Utils.DeleteFolderIfExists(_targetDirectoryPath);
 
-            _sourceFilePath = Path.Combine(_sourceFolder, "File");
-            _targetFilePath = Path.Combine(_targetFolder, "File");
+            Directory.CreateDirectory(_sourceDirectoryPath);
+            Directory.CreateDirectory(_targetDirectoryPath);
+
+            _sourceFilePath = Path.Combine(_sourceDirectoryPath, "File");
+            _targetFilePath = Path.Combine(_targetDirectoryPath, "File");
         }
 
         [TearDown]
         public void Teardown()
         {
-            Utils.ClearFolder(_sourceFolder);
-            Utils.ClearFolder(_targetFolder);
-
+            Utils.ClearFolder(_sourceDirectoryPath);
+            Utils.ClearFolder(_targetDirectoryPath);
         }
 
         [OneTimeTearDown]

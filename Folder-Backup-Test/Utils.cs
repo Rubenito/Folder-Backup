@@ -2,6 +2,15 @@
 {
     public static class Utils
     {
+        public static void DeleteFolderIfExists(string folder) 
+        {
+            if(Directory.Exists(folder)) 
+            {
+                ClearFolder(folder);
+                Directory.Delete(folder, true);
+            }
+        }
+
         public static void ClearFolder(string folder)
         {
             GC.Collect();
