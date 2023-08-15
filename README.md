@@ -3,7 +3,7 @@
 ### Repository structure
 Since this coding task is for a QA position, I decided to show some of the QA I did while working on it. The actual project lives in Folder-Backup, the testing I did in Folder-Backup-Test. 
 ### Project execution
-Since I used P/Invoke to compare the contents of a file the project needs to be build once before the unit tests work.
+Since I used P/Invoke to compare the contents of a file, the project needs to be build once before the unit tests work.
 ## Notable decisions
 ### No hashing
 I decided to not hash the contents of my files since I believe it would make the process slower overall. To hash a file I would need to fully read it, but since hash-collision is always possible, I would still need to read the contents of two files to make sure they are actually the same. So, for the most common case, the case that the file stayed the same, hashing adds one more read of a file to the overall workload.   
