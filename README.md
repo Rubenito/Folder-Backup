@@ -1,5 +1,5 @@
 # Folder-Backup
-## Structure & execution
+## Structure
 ### Repository structure
 Since this coding task is for a QA position, I decided to show some of the QA I did while working on it. The actual project lives in Folder-Backup, the testing I did in Folder-Backup-Test. 
 ## Notable decisions
